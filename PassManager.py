@@ -6,17 +6,15 @@ db = []
 
 
 def greetings():
-    print()
-    print('Добро пожаловать в Ваш персональный Менеджер паролей для сайтов!')
-    print()
-    print('Возможности Менеджера:')
+    print('==================')
+    print('Доступные команды:')
     print('1. Добавить сайт, логин и пароль в базу Менеджера')
     print('2. Добавить сайт, логин и сгенерировать пароль')
     print('3. Изменить пароль (для сайта из базы Менеджера)')
-    print('4. Удалить сайт, логин и пароль из базы Менеджера')
+    print('4. Удалить сайт из базы Менеджера')
     print('5. Узнать пароль для сайта')
     print('6. Выйти из программы')
-    mode = int(input('Что бы вы хотели сделать? (1-6):'))
+    mode = int(input('Введите номер команды:'))
     return mode
 
 
@@ -36,6 +34,7 @@ def add_pass(db):
     login = input('Введите логин: ')
     password = input('Введите пароль: ')
     db.append({'site': site, 'login': login, 'password': password})
+    print(f'{site} успешно добавлен в базу!')
 
 
 def add_and_gen_pass(db):
@@ -58,59 +57,78 @@ def add_and_gen_pass(db):
     login = input('Введите логин: ')
     len_pass = int(input('Введите длину пароля: '))
     password = generate_pass(len_pass)
+    print(f'Ваш новый пароль для сайта {site}: {password}')
     db.append({'site': site, 'login': login, 'password': password})
 
 
 def change_pass():
-    def change(subject, prev):
-        t = input(f'Введите {subject} ({prev}):')
+    def change(message, prev):
+        t = input(f'Введите новый {message}:')
         if t == '':
             return prev
         else:
             return t
 
-    while True:
-        info = input('Введите название сайта: ')
-        for i in db:
-            if i in db:
-                info['site'] = change('название сайта', info['site'])
-                info['login'] = change('Ваш логин', info['login'])
-                info['password'] = change('Новый пароль', info['password'])
-                greetings()
-                break
-            else:
-                print('Такого сайта нет в базе')
-                greetings()
-                break
+    info = input('Введите название сайта: ')
+    count = 0
+    for i in db:
+        if info == i['site']:
+            i['login'] = change('логин', i['login'])
+            i['password'] = change('пароль', i['password'])
+            print(f'Сайт: {i["site"]}')
+            print(f'Логин: {i["login"]}')
+            print(f'Пароль: {i["password"]}')
+            break
+        count += 1
+    if count == len(db):
+        print('Такого сайта нет в базе')
 
+
+def remove_site():
+    info = input('Введите название сайта: ')
+    count = 0
+    for i in db:
+        if info == i['site']:
+            db.remove(i)
+            print(f'Сайт {info} успешно удален!')
+            break
+        count += 1
+    if count == len(db):
+        print('Такого сайта нет в базе')
 
 def search_site():
-    site = input('Введите название сайта: ')
+    info = input('Введите название сайта: ')
+    count = 0
     for i in db:
-        if site in i["site"]:
-            print(f'Ваш логин для входа на сайт {site}: {i["login"]}')
-            print(f'Ваш пароль для входа на сайт {site}: {i["password"]}')
-        else:
-            print('Данного сайта нет в базе')
-
-
-def loop(filename):
-    db = load_db(filename)
-    while True:
-        mode = greetings()
-        if mode == 1:
-            add_pass(db)
-        elif mode == 2:
-            add_and_gen_pass(db)
-        elif mode == 3:
-            change_pass()
-        elif mode == 5:
-            search_site()
-        elif mode == 6:
+        if info in i["site"]:
+            print(f'Ваш логин для входа на сайт {info}: {i["login"]}')
+            print(f'Ваш пароль для входа на сайт {info}: {i["password"]}')
             break
-        else:
-            print('Такого режима нет')
-    save_db(filename, db)
+        count += 1
+    if count == len(db):
+        print('Такого сайта нет в базе Менеджера')
 
 
-loop('user.json')
+db = load_db('user.json')
+print('========================================================================')
+print('=== Добро пожаловать в Ваш персональный Менеджер паролей для сайтов! ===')
+print('========================================================================')
+while True:
+    mode = greetings()
+    if mode == 1:
+        add_pass(db)
+    elif mode == 2:
+        add_and_gen_pass(db)
+    elif mode == 3:
+        change_pass()
+    elif mode == 4:
+        remove_site()
+    elif mode == 5:
+        search_site()
+    elif mode == 6:
+        break
+    else:
+        print('Такого режима нет')
+    input("Нажмите любую клавишу для продолжения...")
+
+save_db('user.json', db)
